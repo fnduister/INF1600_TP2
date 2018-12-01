@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QFile>
+#include "lexique.h"
 
 namespace Ui {
 class MainWindow;

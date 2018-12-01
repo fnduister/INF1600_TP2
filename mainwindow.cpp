@@ -24,5 +24,7 @@ void MainWindow::on_actioncharger_lexique_triggered()
         QMessageBox::warning(this, "Warning", "Connot open file : "+ file.errorString());
     }
     QTextStream in(&file);
-    QString text = in.readAll();
+    Lexique* lexique = new Lexique();
+    lexique->loadItems(in);
+
 }
