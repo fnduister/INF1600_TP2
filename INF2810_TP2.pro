@@ -28,12 +28,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     state.cpp \
-    lexique.cpp
+    lexique.cpp \
+    branch.cpp
 
 HEADERS += \
         mainwindow.h \
     lexique.h \
-    state.h
+    state.h \
+    branch.h
 
 FORMS += \
         mainwindow.ui

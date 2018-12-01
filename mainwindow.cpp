@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QTextStream>
+#include "lexique.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -26,5 +27,4 @@ void MainWindow::on_actioncharger_lexique_triggered()
     QTextStream in(&file);
     Lexique* lexique = new Lexique();
     lexique->loadItems(in);
-
 }
