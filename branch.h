@@ -3,17 +3,25 @@
 
 #include <vector>
 
+
 class State;
+
 class Branch
 {
 public:
     Branch();
-    State* getNextState() const;
-    std::vector<int> getOutputs() const;
+    ~Branch();
+
+    std::vector<int> getOutput();
+    State* getNextState();
+    void addOutput(int output);
+
+    void setNextState(State* state);
+
 private:
-    int id;
-    std::vector<int> outputs;
-    State* nextState;
+    std::vector<int> output;
+    State *nextState;
+
 };
 
 #endif // BRANCH_H
