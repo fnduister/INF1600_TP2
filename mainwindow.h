@@ -32,6 +32,10 @@ private:
     Lexique* lexique;
     QStringList results;
     QStringListModel *model;
+    QString jall_out_pas;
+    std::vector<int> resultArray;
+
+    bool isInJall = false;
 };
 
 #endif // MAINWINDOW_H

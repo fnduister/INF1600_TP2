@@ -37,27 +37,53 @@ void MainWindow::on_lineEdit_textChanged(const QString &newWord)
     QChar newInput = newWord.back();
     State* currentState = lexique->getCurrentState();
     QStringList list;
-    std::vector<int> resultArray;
 
-    if(!newWord.isEmpty()){
-            if(newWord.length() > currentWord.length()){
-                resultArray = currentState->getBranchs()[newInput]->getOutput();
-            }else if(currentState->getPreviousState() != nullptr){
-                //comme on recul on veut le state precedent
 
-                currentState = currentState->getPreviousState()->getPreviousState();
-                resultArray = currentState->getBranchs()[newInput]->getOutput();
-            }
+    if(isInJall){
+        if(jall_out_pas == newWord){
+            isInJall = false;
 
             for(int word: resultArray){
                 list << lexique->getItems()[word];
             }
+            model->setStringList(list);
+            ui->listView->setModel(model);
+        }else{
+            isInJall = true;
+        }
+    }else{
+        if(!newWord.isEmpty()){
 
-            }//changer la list dans le widget
-        model->setStringList(list);
-        ui->listView->setModel(model);
-        currentState = currentState->getBranchs()[newInput]->getNextState();
-        lexique->setCurrentState(currentState);
-        currentWord = newWord;
+                if(newWord.length() > currentWord.length()){
+                    if(currentState->getBranchs()[newInput] == nullptr){
+                        isInJall = true;
+                            list << "aucun mot correspondant";
+                            model->setStringList(list);
+                            ui->listView->setModel(model);
+                            return;
+                    }
+                    resultArray = currentState->getBranchs()[newInput]->getOutput();
+
+                }else if(currentState->getPreviousState() != nullptr){
+                    //comme on recul on veut le state precedent
+                    currentState = currentState->getPreviousState()->getPreviousState();
+                    resultArray = currentState->getBranchs()[newInput]->getOutput();
+                }
+
+                for(int word: resultArray){
+                    list << lexique->getItems()[word];
+                }
+                model->setStringList(list);
+                ui->listView->setModel(model);
+                currentState = currentState->getBranchs()[newInput]->getNextState();
+                lexique->setCurrentState(currentState);
+                currentWord = newWord;
+
+                jall_out_pas = newWord;
+            //changer la list dans le widget
+
+        }
+   }
+
 
 }
