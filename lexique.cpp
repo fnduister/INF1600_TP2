@@ -11,7 +11,7 @@ Lexique::~Lexique()
 {
 }
 
-std::vector<QString> Lexique::getItems()
+std::vector<Word*> Lexique::getItems() const
 {
     return items;
 }
@@ -21,7 +21,7 @@ std::vector<State*> Lexique::getStates()
     return states;
 }
 
-void Lexique::setItem(std::vector<QString> items)
+void Lexique::setItem(std::vector<Word*> items)
 {
     this->items = items;
 }
@@ -62,8 +62,8 @@ std::map<QChar, Branch*> Lexique::createBranchs(int index, std::vector<int> prev
     std::map<QChar, Branch*> branchs;
     for (unsigned int i = 0; i < items.size(); i++) {
         if (containValue(i, previous_branch_outputs)) {
-            if (items[i].length() > index) {
-                QChar key = items[i].at(index);
+            if (items[i]->getWord().length() > index) {
+                QChar key = items[i]->getWord().at(index);
 
                 if (branchs.find(key) == branchs.end()) {
                     branchs[key] = new Branch();
@@ -79,22 +79,65 @@ std::map<QChar, Branch*> Lexique::createBranchs(int index, std::vector<int> prev
 
 int Lexique::getBiggerItemCount()
 {
-    unsigned int max = 0;
+    int max = 0;
     for (int unsigned i = 0; i < items.size(); i++) {
-        if (items[i].length() > max) {
-            max = items[i].length();
+        if (items[i]->getWord().length() > max) {
+            max = items[i]->getWord().length();
         }
     }
     return max;
 }
 
 void Lexique::loadItems(QTextStream& in){
+    QString line;
+    int id = 0;
+    Word *tempWord;
     while(!in.atEnd()){
-        items.push_back(in.readLine());
+        line = in.readLine();
+        tempWord = new Word(line, id);
+        items.push_back(tempWord);
+        ++id;
     }
-    //ajout du state prison
-//    items.push_back("aucun mot correspondant");
 };
+
+//void Lexique::updateOccurrence(std::vector<int> resultArray){
+//    for(int resultId :resultArray){
+//        occurrences[items[resultId]] += 1;
+//    }
+//}
+
+int Lexique::getNumberShowedOccurrences()const{
+    return numberShowedOccurrences;
+}
+
+std::vector<Word*> Lexique::getSortedItems() const{
+    return SortedItems;
+}
+
+
+void Lexique::sortItems(){
+    for(Word* word: items){
+        SortedItems.push_back(word);
+    }
+    std::sort(SortedItems.begin(), SortedItems.end(), SortByOccurences());
+}
+
+bool sortbysec(const std::pair<QString,int> &a,
+                   const std::pair<QString,int> &b)
+{
+    return (a.second > b.second);
+}
+
+
+void Lexique::initialiserLexique(){
+    for(State* state : states){
+        delete state;
+    }
+    states.clear();
+    items.clear();
+    currentState = nullptr;
+    nb_state = 0;
+}
 
 void Lexique::buildAutomate()
 {

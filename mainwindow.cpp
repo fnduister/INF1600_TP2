@@ -11,16 +11,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     lexique = new Lexique();
     model = new QStringListModel();
+    modelOccurrence = new QStringListModel();
+    ui->lineEdit->setReadOnly(true);
 }
 
 MainWindow::~MainWindow()
 {
     delete lexique;
+    delete(model);
+    delete(modelOccurrence);
     delete ui;
 }
 
 void MainWindow::on_actioncharger_lexique_triggered()
 {
+    lexique->initialiserLexique();
     QString filename = QFileDialog::getOpenFileName(this,"Open the lexique");
     QFile file(filename);
     currentFile = filename;
@@ -30,21 +35,28 @@ void MainWindow::on_actioncharger_lexique_triggered()
     QTextStream in(&file);
     lexique->loadItems(in);
     lexique->buildAutomate();
+    ui->lineEdit->setReadOnly(false);
 }
 
 void MainWindow::on_lineEdit_textChanged(const QString &newWord)
 {
-    QChar newInput = newWord.back();
     State* currentState = lexique->getCurrentState();
     QStringList list;
+    QChar newInput;
+
+    if(!newWord.isEmpty()){
+        newInput = newWord.back();
+    }else if(isInJall){
+            isInJall = false;
+    }
 
 
     if(isInJall){
         if(jall_out_pas == newWord){
             isInJall = false;
 
-            for(int word: resultArray){
-                list << lexique->getItems()[word];
+            for(int wordPosition: resultArray){
+                list << lexique->getItems()[wordPosition]->getWord();
             }
             model->setStringList(list);
             ui->listView->setModel(model);
@@ -53,7 +65,6 @@ void MainWindow::on_lineEdit_textChanged(const QString &newWord)
         }
     }else{
         if(!newWord.isEmpty()){
-
                 if(newWord.length() > currentWord.length()){
                     if(currentState->getBranchs()[newInput] == nullptr){
                         isInJall = true;
@@ -64,26 +75,61 @@ void MainWindow::on_lineEdit_textChanged(const QString &newWord)
                     }
                     resultArray = currentState->getBranchs()[newInput]->getOutput();
 
+                    //On met a jour
+                    if(ui->checkBox->isChecked()){
+                        lexique->sortItems();
+                        on_checkBox_toggled(true);
+                    }
                 }else if(currentState->getPreviousState() != nullptr){
-                    //comme on recul on veut le state precedent
+                    //comme on recul on veut le state precedent.
                     currentState = currentState->getPreviousState()->getPreviousState();
-                    resultArray = currentState->getBranchs()[newInput]->getOutput();
+
+                    //on verifie si on est au debut.
+                    if(currentState->getPreviousState() != nullptr){
+                        resultArray = currentState->getBranchs()[newInput]->getOutput();
+                    }
+
                 }
 
-                for(int word: resultArray){
-                    list << lexique->getItems()[word];
+                //mettre a jour la liste de mot a afficher ainsi qu'incrementer son occurence.
+                for(int wordPosition: resultArray){
+                    list << lexique->getItems()[wordPosition]->getWord();
+                    lexique->getItems()[wordPosition]->increaseOccurrence();
                 }
+
                 model->setStringList(list);
                 ui->listView->setModel(model);
+
+                //on va au state suivant.
                 currentState = currentState->getBranchs()[newInput]->getNextState();
                 lexique->setCurrentState(currentState);
-                currentWord = newWord;
 
-                jall_out_pas = newWord;
-            //changer la list dans le widget
-
+        }else{
+            //si on recule jusqu'au debut alors on n'affiche rien et on recommence au state 0.
+            model->setStringList(list);
+            ui->listView->setModel(model);
+            lexique->setCurrentState(lexique->getStates()[0]);
         }
+
+        currentWord = newWord;
+
+        jall_out_pas = newWord;
    }
+}
 
+void MainWindow::on_checkBox_toggled(bool checked)
+{
+    QStringList listOccurrences;
+    if(checked){
+        lexique->sortItems();
+        for(int i = 0;i < lexique->getNumberShowedOccurrences();i++){
+            Word* tempWord = lexique->getSortedItems()[i];
+            listOccurrences << tempWord->getWord() << QString(tempWord->getOccurrence()) << QString(tempWord->getUsed());
+        }
+    }else{
+        listOccurrences.empty();
+    }
 
+    modelOccurrence->setStringList(listOccurrences);
+    ui->listViewOccurrences->setModel(modelOccurrence);
 }

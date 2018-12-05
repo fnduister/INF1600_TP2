@@ -25,6 +25,8 @@ private slots:
 
     void on_lineEdit_textChanged(const QString &arg1);
 
+    void on_checkBox_toggled(bool checked);
+
 private:
     Ui::MainWindow *ui;
     QString currentFile = "";
@@ -32,9 +34,10 @@ private:
     Lexique* lexique;
     QStringList results;
     QStringListModel *model;
+    QStringListModel *modelOccurrence;
     QString jall_out_pas;
     std::vector<int> resultArray;
-
+    bool lexiqueLoaded = false;
     bool isInJall = false;
 };
 

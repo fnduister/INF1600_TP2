@@ -29,13 +29,15 @@ SOURCES += \
         mainwindow.cpp \
     state.cpp \
     lexique.cpp \
-    branch.cpp
+    branch.cpp \
+    word.cpp
 
 HEADERS += \
         mainwindow.h \
     lexique.h \
     state.h \
-    branch.h
+    branch.h \
+    word.h
 
 FORMS += \
         mainwindow.ui
